@@ -1,3 +1,9 @@
+import DarkModeToggle from "@/components/DarkModeToggle";
+
 export default function Home() {
-  return <div>Hello Next.js</div>;
+  return (
+    <div>
+      <DarkModeToggle />
+    </div>
+  );
 }
