@@ -1,4 +1,6 @@
-import { useState } from "react";
+"use client";
+
+import { useEffect, useState } from "react";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import {
@@ -10,22 +12,26 @@ import {
 } from "./ui/select";
 import { Button } from "./ui/button";
 import { ArrowRightLeft } from "lucide-react";
-
-const currencyRates: {
-  [key: string]: number;
-} = {
-  USD: 1,
-  EUR: 0.85,
-  GBP: 0.73,
-  INR: 73.51,
-};
+import { ICurrency } from "@/models/currency.model";
 
 export default function Currency() {
+  const [currencyRates, setCurrencyRates] = useState<ICurrency>({});
+
   const [amount, setAmount] = useState<number | "">("");
   const [result, setResult] = useState<number | "">("");
 
   const [fromCurrency, setFromCurrency] = useState("EUR");
   const [toCurrency, setToCurrency] = useState("USD");
+
+  useEffect(() => {
+    fetchRatios();
+  }, []);
+
+  const fetchRatios = async () => {
+    const response = await fetch("https://api.fxratesapi.com/latest");
+    const data = await response.json();
+    setCurrencyRates(data.rates);
+  };
 
   const changeAmount = (value: string) => {
     const numericValue = parseFloat(value);
