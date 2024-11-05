@@ -66,3 +66,11 @@
     @apply bg-background text-foreground;
   }
 }
+
+html,
+body {
+  overflow: hidden;
+}
+body {
+  position: relative;
+}
