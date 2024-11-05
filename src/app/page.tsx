@@ -8,7 +8,7 @@ import Units from "@/components/Units";
 
 export default function Home() {
   return (
-    <div className="flex min-h-svh items-center justify-center p-2">
+    <div className="flex min-h-svh items-center justify-center overflow-hidden p-2">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">

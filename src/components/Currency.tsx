@@ -3,19 +3,25 @@
 import { useEffect, useState } from "react";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
 import { Button } from "./ui/button";
-import { ArrowRightLeft } from "lucide-react";
+import { ArrowRightLeft, Check, ChevronsUpDown } from "lucide-react";
 import { ICurrency } from "@/models/currency.model";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "./ui/command";
+import { cn } from "@/lib/utils";
 
 export default function Currency() {
   const [currencyRates, setCurrencyRates] = useState<ICurrency>({});
+
+  const [openFrom, setOpenFrom] = useState(false);
+  const [openTo, setOpenTo] = useState(false);
 
   const [amount, setAmount] = useState<number | "">("");
   const [result, setResult] = useState<number | "">("");
@@ -81,18 +87,52 @@ export default function Currency() {
       <div className="flex items-end gap-2">
         <div className="w-full space-y-1">
           <Label htmlFor="fromCurrency">From</Label>
-          <Select value={fromCurrency} onValueChange={setFromCurrency}>
-            <SelectTrigger id="fromCurrency">
-              <SelectValue placeholder="Select currency" />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.keys(currencyRates).map((currency) => (
-                <SelectItem key={currency} value={currency}>
-                  {currency}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Popover open={openFrom} onOpenChange={setOpenFrom}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={openFrom}
+                className="w-full justify-between"
+              >
+                {fromCurrency
+                  ? Object.keys(currencyRates).find(
+                      (currency) => currency === fromCurrency,
+                    )
+                  : "Select currency.."}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-full p-0">
+              <Command>
+                <CommandInput placeholder="Search currency.." />
+                <CommandList>
+                  <CommandEmpty>No currency found.</CommandEmpty>
+                  <CommandGroup>
+                    {Object.keys(currencyRates).map((currency) => (
+                      <CommandItem
+                        key={currency}
+                        value={currency}
+                        onSelect={(currentValue) => {
+                          setFromCurrency(currentValue);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            fromCurrency === currency
+                              ? "opacity-100"
+                              : "opacity-0",
+                          )}
+                        />
+                        {currency}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
         <Button
           className="shrink-0"
@@ -104,18 +144,52 @@ export default function Currency() {
         </Button>
         <div className="w-full space-y-1">
           <Label htmlFor="toCurrency">To</Label>
-          <Select value={toCurrency} onValueChange={setToCurrency}>
-            <SelectTrigger id="toCurrency">
-              <SelectValue placeholder="Select currency" />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.keys(currencyRates).map((currency) => (
-                <SelectItem key={currency} value={currency}>
-                  {currency}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Popover open={openTo} onOpenChange={setOpenTo}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={openTo}
+                className="w-full justify-between"
+              >
+                {toCurrency
+                  ? Object.keys(currencyRates).find(
+                      (currency) => currency === toCurrency,
+                    )
+                  : "Select currency.."}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-full p-0">
+              <Command>
+                <CommandInput placeholder="Search currency..." />
+                <CommandList>
+                  <CommandEmpty>No currency found.</CommandEmpty>
+                  <CommandGroup>
+                    {Object.keys(currencyRates).map((currency) => (
+                      <CommandItem
+                        key={currency}
+                        value={currency}
+                        onSelect={(currentValue) => {
+                          setToCurrency(currentValue);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            toCurrency === currency
+                              ? "opacity-100"
+                              : "opacity-0",
+                          )}
+                        />
+                        {currency}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
       <div className="space-y-1">
