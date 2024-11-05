@@ -79,6 +79,7 @@ export default function Currency() {
         <Input
           id="currencyAmout"
           type="number"
+          inputMode="decimal"
           value={amount}
           min={0}
           onChange={(e) => changeAmount(e.target.value)}
@@ -199,6 +200,7 @@ export default function Currency() {
         <Input
           id="resultAmount"
           type="number"
+          inputMode="decimal"
           value={result}
           onChange={(e) => changeResult(e.target.value)}
         />
