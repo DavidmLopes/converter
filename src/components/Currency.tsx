@@ -115,6 +115,7 @@ export default function Currency() {
                         value={currency}
                         onSelect={(currentValue) => {
                           setFromCurrency(currentValue);
+                          setOpenFrom(false);
                         }}
                       >
                         <Check
@@ -172,6 +173,7 @@ export default function Currency() {
                         value={currency}
                         onSelect={(currentValue) => {
                           setToCurrency(currentValue);
+                          setOpenTo(false);
                         }}
                       >
                         <Check
