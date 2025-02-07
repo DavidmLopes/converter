@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
@@ -17,27 +17,17 @@ import {
 } from "./ui/command";
 import { cn } from "@/lib/utils";
 
-export default function Currency() {
-  const [currencyRates, setCurrencyRates] = useState<ICurrency>({});
+interface CurrencyProps {
+  currencyRates: ICurrency;
+}
 
+export default function Currency({ currencyRates }: CurrencyProps) {
   const [openFrom, setOpenFrom] = useState(false);
   const [openTo, setOpenTo] = useState(false);
-
   const [amount, setAmount] = useState<number | "">("");
   const [result, setResult] = useState<number | "">("");
-
   const [fromCurrency, setFromCurrency] = useState("EUR");
   const [toCurrency, setToCurrency] = useState("USD");
-
-  useEffect(() => {
-    fetchRatios();
-  }, []);
-
-  const fetchRatios = async () => {
-    const response = await fetch("https://api.fxratesapi.com/latest");
-    const data = await response.json();
-    setCurrencyRates(data.rates);
-  };
 
   const changeAmount = (value: string) => {
     const numericValue = parseFloat(value);
