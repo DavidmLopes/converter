@@ -169,18 +169,64 @@ test('browsers without view transitions fade the colors', async ({ page }) => {
   await expect
     .poll(() =>
       page.evaluate(() => {
-        const channels = getComputedStyle(document.body)
-          .backgroundColor.match(/[\d.]+/g)
-          ?.map(Number);
-        return channels && channels[0] > 10 && channels[0] < 255;
+        return document.getAnimations().some((animation) => {
+          const timing = animation.effect?.getComputedTiming();
+          return (
+            animation instanceof CSSTransition &&
+            animation.transitionProperty === 'background-color' &&
+            typeof timing?.progress === 'number' &&
+            timing.progress > 0 &&
+            timing.progress < 1
+          );
+        });
       }),
     )
     .toBe(true);
   await expect(page.locator('html')).not.toHaveAttribute(
     'data-theme-transition',
   );
-  await expect(page.locator('body')).toHaveCSS(
-    'background-color',
-    'rgb(255, 255, 255)',
-  );
+  // Compare rendered color, independent of the browser's RGB/Lab serialization.
+  expect(
+    await page.evaluate(() => {
+      const canvas = document.createElement('canvas');
+      canvas.width = canvas.height = 1;
+      const context = canvas.getContext('2d')!;
+      context.fillStyle = getComputedStyle(document.body).backgroundColor;
+      context.fillRect(0, 0, 1, 1);
+      return Array.from(context.getImageData(0, 0, 1, 1).data);
+    }),
+  ).toEqual([255, 255, 255, 255]);
+});
+
+test('currency search and unit selects support keyboard navigation', async ({
+  page,
+}) => {
+  await page.getByRole('combobox', { name: 'To', exact: true }).click();
+  const search = page.getByPlaceholder('Search currency..');
+  await search.fill('GBP');
+  await search.press('ArrowDown');
+  await search.press('Enter');
+  await expect(
+    page.getByRole('combobox', { name: 'To', exact: true }),
+  ).toHaveText('GBP');
+  await page.getByLabel('Amount').fill('100');
+  await expect(page.getByLabel('Result')).toHaveValue('85');
+
+  const currencyTab = page.getByRole('tab', { name: 'Currency', exact: true });
+  await currencyTab.focus();
+  await currencyTab.press('ArrowRight');
+  await expect(
+    page.getByRole('tab', { name: 'Units', exact: true }),
+  ).toHaveAttribute('data-state', 'active');
+  const category = page.getByRole('combobox', { name: 'Unit Type' });
+  await category.focus();
+  await category.press('Enter');
+  const length = page.getByRole('option', { name: 'Length', exact: true });
+  await expect(length).toBeFocused();
+  await length.press('ArrowDown');
+  await expect(
+    page.getByRole('option', { name: 'Volume', exact: true }),
+  ).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(category).toHaveText('Volume');
 });

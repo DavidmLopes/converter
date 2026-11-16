@@ -46,7 +46,7 @@ export default function Currency({
 
   return (
     <>
-      <div className="space-y-1">
+      <div className="grid gap-2">
         <Label htmlFor="currencyAmount">Amount</Label>
         <Input
           id="currencyAmount"
@@ -58,7 +58,7 @@ export default function Currency({
         />
       </div>
       <div className="flex items-end gap-2">
-        <div className="w-full space-y-1">
+        <div className="grid min-w-0 flex-1 gap-2">
           <Label htmlFor="fromCurrency">From</Label>
           <Popover open={openFrom} onOpenChange={setOpenFrom}>
             <PopoverTrigger asChild>
@@ -71,10 +71,10 @@ export default function Currency({
                 className="w-full justify-between"
               >
                 {fromCurrency}
-                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                <ChevronsUpDown className="size-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-full p-0">
+            <PopoverContent className="w-(--radix-popover-trigger-width) p-0">
               <Command>
                 <CommandInput placeholder="Search currency.." />
                 <CommandList>
@@ -91,7 +91,7 @@ export default function Currency({
                       >
                         <Check
                           className={cn(
-                            "mr-2 h-4 w-4",
+                            "size-4",
                             fromCurrency === currency
                               ? "opacity-100"
                               : "opacity-0",
@@ -115,7 +115,7 @@ export default function Currency({
         >
           <ArrowRightLeft />
         </Button>
-        <div className="w-full space-y-1">
+        <div className="grid min-w-0 flex-1 gap-2">
           <Label htmlFor="toCurrency">To</Label>
           <Popover open={openTo} onOpenChange={setOpenTo}>
             <PopoverTrigger asChild>
@@ -128,10 +128,10 @@ export default function Currency({
                 className="w-full justify-between"
               >
                 {toCurrency}
-                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                <ChevronsUpDown className="size-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-full p-0">
+            <PopoverContent className="w-(--radix-popover-trigger-width) p-0">
               <Command>
                 <CommandInput placeholder="Search currency..." />
                 <CommandList>
@@ -148,7 +148,7 @@ export default function Currency({
                       >
                         <Check
                           className={cn(
-                            "mr-2 h-4 w-4",
+                            "size-4",
                             toCurrency === currency
                               ? "opacity-100"
                               : "opacity-0",
@@ -164,7 +164,7 @@ export default function Currency({
           </Popover>
         </div>
       </div>
-      <div className="space-y-1">
+      <div className="grid gap-2">
         <Label htmlFor="currencyResult">Result</Label>
         <Input
           id="currencyResult"

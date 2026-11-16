@@ -42,10 +42,10 @@ export default function Units() {
 
   return (
     <>
-      <div className="space-y-1">
+      <div className="grid gap-2">
         <Label htmlFor="unitType">Unit Type</Label>
         <Select value={unitType} onValueChange={changeUnitType}>
-          <SelectTrigger id="unitType">
+          <SelectTrigger id="unitType" className="w-full">
             <SelectValue placeholder="Select unit type" />
           </SelectTrigger>
           <SelectContent>
@@ -57,7 +57,7 @@ export default function Units() {
           </SelectContent>
         </Select>
       </div>
-      <div className="space-y-1">
+      <div className="grid gap-2">
         <Label htmlFor="unitAmount">Amount</Label>
         <Input
           id="unitAmount"
@@ -69,10 +69,10 @@ export default function Units() {
         />
       </div>
       <div className="flex items-end gap-2">
-        <div className="w-full space-y-1">
+        <div className="grid min-w-0 flex-1 gap-2">
           <Label htmlFor="fromUnit">From</Label>
           <Select value={fromUnit} onValueChange={setFromUnit}>
-            <SelectTrigger id="fromUnit">
+            <SelectTrigger id="fromUnit" className="w-full">
               <SelectValue placeholder="Select unit" />
             </SelectTrigger>
             <SelectContent>
@@ -93,10 +93,10 @@ export default function Units() {
         >
           <ArrowRightLeft />
         </Button>
-        <div className="w-full space-y-1">
+        <div className="grid min-w-0 flex-1 gap-2">
           <Label htmlFor="toUnit">To</Label>
           <Select value={toUnit} onValueChange={setToUnit}>
-            <SelectTrigger id="toUnit">
+            <SelectTrigger id="toUnit" className="w-full">
               <SelectValue placeholder="Select unit" />
             </SelectTrigger>
             <SelectContent>
@@ -109,7 +109,7 @@ export default function Units() {
           </Select>
         </div>
       </div>
-      <div className="space-y-1">
+      <div className="grid gap-2">
         <Label htmlFor="unitResult">Result</Label>
         <Input
           id="unitResult"
