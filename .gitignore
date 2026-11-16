@@ -41,3 +41,7 @@ next-env.d.ts
 
 # VSCode
 .vscode/*
+
+# browser tests
+/playwright-report/
+/test-results/

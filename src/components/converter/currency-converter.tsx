@@ -1,12 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { Label } from "./ui/label";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { ArrowRightLeft, Check, ChevronsUpDown } from "lucide-react";
-import { ICurrency } from "@/models/currency.model";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { useConversion } from "@/hooks/use-conversion";
+import type { useCurrencyRates } from "@/hooks/use-currency-rates";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Command,
   CommandEmpty,
@@ -14,60 +19,37 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "./ui/command";
+} from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 
-interface CurrencyProps {
-  currencyRates: ICurrency;
-}
-
-export default function Currency({ currencyRates }: CurrencyProps) {
+export default function Currency({
+  rates: currencyRates,
+  status,
+  retry,
+}: ReturnType<typeof useCurrencyRates>) {
   const [openFrom, setOpenFrom] = useState(false);
   const [openTo, setOpenTo] = useState(false);
-  const [amount, setAmount] = useState<number | "">("");
-  const [result, setResult] = useState<number | "">("");
   const [fromCurrency, setFromCurrency] = useState("EUR");
   const [toCurrency, setToCurrency] = useState("USD");
 
-  const changeAmount = (value: string) => {
-    const numericValue = parseFloat(value);
-    setAmount(value === "" ? "" : numericValue);
-    setResult(
-      value === ""
-        ? ""
-        : parseFloat(convertCurrency(numericValue, fromCurrency, toCurrency)),
-    );
-  };
-
-  const changeResult = (value: string) => {
-    const numericValue = parseFloat(value);
-    setResult(value === "" ? "" : numericValue);
-    setAmount(
-      value === ""
-        ? ""
-        : parseFloat(convertCurrency(numericValue, toCurrency, fromCurrency)),
-    );
-  };
-
-  const convertCurrency = (amount: number, from: string, to: string) => {
-    return ((amount / currencyRates[from]) * currencyRates[to]).toFixed(2);
-  };
+  const { amount, result, changeAmount, changeResult, swap } = useConversion(
+    fromCurrency,
+    toCurrency,
+    currencyRates,
+  );
 
   const switchCurrencies = () => {
-    const auxCurrency = fromCurrency;
     setFromCurrency(toCurrency);
-    setToCurrency(auxCurrency);
-    const auxAmount = amount;
-    setAmount(result);
-    setResult(auxAmount);
+    setToCurrency(fromCurrency);
+    swap();
   };
 
   return (
     <>
       <div className="space-y-1">
-        <Label htmlFor="currencyAmout">Amount</Label>
+        <Label htmlFor="currencyAmount">Amount</Label>
         <Input
-          id="currencyAmout"
+          id="currencyAmount"
           type="number"
           inputMode="decimal"
           value={amount}
@@ -82,15 +64,13 @@ export default function Currency({ currencyRates }: CurrencyProps) {
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
+                id="fromCurrency"
                 role="combobox"
+                disabled={status !== "ready"}
                 aria-expanded={openFrom}
                 className="w-full justify-between"
               >
-                {fromCurrency
-                  ? Object.keys(currencyRates).find(
-                      (currency) => currency === fromCurrency,
-                    )
-                  : "Select currency.."}
+                {fromCurrency}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
@@ -130,7 +110,8 @@ export default function Currency({ currencyRates }: CurrencyProps) {
           className="shrink-0"
           variant="outline"
           size="icon"
-          onClick={() => switchCurrencies()}
+          aria-label="Swap currencies"
+          onClick={switchCurrencies}
         >
           <ArrowRightLeft />
         </Button>
@@ -140,15 +121,13 @@ export default function Currency({ currencyRates }: CurrencyProps) {
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
+                id="toCurrency"
                 role="combobox"
+                disabled={status !== "ready"}
                 aria-expanded={openTo}
                 className="w-full justify-between"
               >
-                {toCurrency
-                  ? Object.keys(currencyRates).find(
-                      (currency) => currency === toCurrency,
-                    )
-                  : "Select currency.."}
+                {toCurrency}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
@@ -186,15 +165,28 @@ export default function Currency({ currencyRates }: CurrencyProps) {
         </div>
       </div>
       <div className="space-y-1">
-        <Label htmlFor="resultAmount">Result</Label>
+        <Label htmlFor="currencyResult">Result</Label>
         <Input
-          id="resultAmount"
+          id="currencyResult"
           type="number"
           inputMode="decimal"
           value={result}
           onChange={(e) => changeResult(e.target.value)}
         />
       </div>
+      {status === "loading" && (
+        <p role="status" className="sr-only">
+          Loading exchange rates.
+        </p>
+      )}
+      {status === "error" && (
+        <div role="alert" className="text-sm text-destructive">
+          Unable to load exchange rates.{" "}
+          <button type="button" className="underline" onClick={retry}>
+            Try again
+          </button>
+        </div>
+      )}
     </>
   );
 }

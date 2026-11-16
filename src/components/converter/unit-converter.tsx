@@ -1,91 +1,43 @@
+"use client";
+
 import { useState } from "react";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
+import { useConversion } from "@/hooks/use-conversion";
+import { unitConversions } from "@/lib/conversion";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "./ui/select";
-import { Button } from "./ui/button";
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { ArrowRightLeft } from "lucide-react";
 
-const unitConversions: {
-  [key: string]: {
-    [key: string]: number;
-  };
-} = {
-  length: {
-    m: 1,
-    cm: 100,
-    km: 0.001,
-    inch: 39.3701,
-  },
-  volume: {
-    l: 1,
-    ml: 1000,
-    gal: 0.264172,
-  },
-  weight: {
-    kg: 1,
-    g: 1000,
-    lb: 2.20462,
-  },
-};
-
 export default function Units() {
-  const [amount, setAmount] = useState<number | "">("");
-  const [result, setResult] = useState<number | "">("");
-
   const [unitType, setUnitType] = useState("length");
   const [fromUnit, setFromUnit] = useState("m");
   const [toUnit, setToUnit] = useState("cm");
 
-  const changeAmount = (value: string) => {
-    const numericValue = parseFloat(value);
-    setAmount(value === "" ? "" : numericValue);
-    setResult(
-      value === ""
-        ? ""
-        : parseFloat(convertUnit(numericValue, fromUnit, toUnit, unitType)),
-    );
-  };
-
-  const changeResult = (value: string) => {
-    const numericValue = parseFloat(value);
-    setResult(value === "" ? "" : numericValue);
-    setAmount(
-      value === ""
-        ? ""
-        : parseFloat(convertUnit(numericValue, toUnit, fromUnit, unitType)),
-    );
-  };
-
-  const convertUnit = (
-    amount: number,
-    from: string,
-    to: string,
-    type: string,
-  ) => {
-    const baseValue = amount / unitConversions[type][from];
-    return (baseValue * unitConversions[type][to]).toFixed(2);
-  };
+  const { amount, result, changeAmount, changeResult, swap } = useConversion(
+    fromUnit,
+    toUnit,
+    unitConversions[unitType],
+  );
 
   const switchUnits = () => {
-    const auxUnit = fromUnit;
     setFromUnit(toUnit);
-    setToUnit(auxUnit);
-    const auxAmount = amount;
-    setAmount(result);
-    setResult(auxAmount);
+    setToUnit(fromUnit);
+    swap();
   };
 
   const changeUnitType = (type: string) => {
-    setUnitType(type);
-    setFromUnit(Object.keys(unitConversions[type])[0]);
-    setToUnit(Object.keys(unitConversions[type])[1]);
     changeAmount(amount.toString());
+    setUnitType(type);
+    const [from, to] = Object.keys(unitConversions[type]);
+    setFromUnit(from);
+    setToUnit(to);
   };
 
   return (
@@ -106,9 +58,9 @@ export default function Units() {
         </Select>
       </div>
       <div className="space-y-1">
-        <Label htmlFor="currencyAmout">Amount</Label>
+        <Label htmlFor="unitAmount">Amount</Label>
         <Input
-          id="currencyAmout"
+          id="unitAmount"
           type="number"
           inputMode="decimal"
           value={amount}
@@ -118,10 +70,10 @@ export default function Units() {
       </div>
       <div className="flex items-end gap-2">
         <div className="w-full space-y-1">
-          <Label htmlFor="fromCurrency">From</Label>
+          <Label htmlFor="fromUnit">From</Label>
           <Select value={fromUnit} onValueChange={setFromUnit}>
-            <SelectTrigger id="fromCurrency">
-              <SelectValue placeholder="Select currency" />
+            <SelectTrigger id="fromUnit">
+              <SelectValue placeholder="Select unit" />
             </SelectTrigger>
             <SelectContent>
               {Object.keys(unitConversions[unitType]).map((unit) => (
@@ -136,15 +88,16 @@ export default function Units() {
           className="shrink-0"
           variant="outline"
           size="icon"
-          onClick={() => switchUnits()}
+          aria-label="Swap units"
+          onClick={switchUnits}
         >
           <ArrowRightLeft />
         </Button>
         <div className="w-full space-y-1">
-          <Label htmlFor="toCurrency">To</Label>
+          <Label htmlFor="toUnit">To</Label>
           <Select value={toUnit} onValueChange={setToUnit}>
-            <SelectTrigger id="toCurrency">
-              <SelectValue placeholder="Select currency" />
+            <SelectTrigger id="toUnit">
+              <SelectValue placeholder="Select unit" />
             </SelectTrigger>
             <SelectContent>
               {Object.keys(unitConversions[unitType]).map((unit) => (
@@ -157,9 +110,9 @@ export default function Units() {
         </div>
       </div>
       <div className="space-y-1">
-        <Label htmlFor="resultAmount">Result</Label>
+        <Label htmlFor="unitResult">Result</Label>
         <Input
-          id="resultAmount"
+          id="unitResult"
           type="number"
           inputMode="decimal"
           value={result}
