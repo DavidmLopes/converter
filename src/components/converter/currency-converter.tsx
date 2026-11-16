@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ArrowRightLeft, Check, ChevronsUpDown } from "lucide-react";
+import { ArrowRightLeft, Check, ChevronsUpDown, Info } from "lucide-react";
 import { useConversion } from "@/hooks/use-conversion";
 import type { useCurrencyRates } from "@/hooks/use-currency-rates";
 import {
@@ -173,6 +173,21 @@ export default function Currency({
           value={result}
           onChange={(e) => changeResult(e.target.value)}
         />
+      </div>
+      <div className="flex items-start gap-2 rounded-md bg-muted/50 px-3 py-2.5 text-xs leading-5 text-muted-foreground">
+        <Info className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+        <p>
+          Rates from{" "}
+          <a
+            href="https://fxratesapi.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-sm underline underline-offset-2 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          >
+            FXRatesAPI
+          </a>
+          .<span className="block">Cached for one hour.</span>
+        </p>
       </div>
       {status === "loading" && (
         <p role="status" className="sr-only">

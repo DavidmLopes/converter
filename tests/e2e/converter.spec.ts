@@ -13,37 +13,59 @@ test.beforeEach(async ({ page }) => {
 test('currency selections, reverse edits, and swaps recalculate', async ({
   page,
 }) => {
-  await page.getByLabel('Amount').fill('100');
-  await expect(page.getByLabel('Result')).toHaveValue('110');
+  await page.getByRole('tabpanel').getByLabel('Amount').fill('100');
+  await expect(page.getByRole('tabpanel').getByLabel('Result')).toHaveValue(
+    '110',
+  );
   await page.getByRole('combobox', { name: 'To', exact: true }).click();
   await page.getByRole('option', { name: 'GBP' }).click();
-  await expect(page.getByLabel('Result')).toHaveValue('85');
-  await page.getByLabel('Result').fill('170');
-  await expect(page.getByLabel('Amount')).toHaveValue('200');
+  await expect(page.getByRole('tabpanel').getByLabel('Result')).toHaveValue(
+    '85',
+  );
+  await page.getByRole('tabpanel').getByLabel('Result').fill('170');
+  await expect(page.getByRole('tabpanel').getByLabel('Amount')).toHaveValue(
+    '200',
+  );
   await page.getByRole('button', { name: 'Swap currencies' }).click();
-  await expect(page.getByLabel('Amount')).toHaveValue('170');
-  await expect(page.getByLabel('Result')).toHaveValue('200');
+  await expect(page.getByRole('tabpanel').getByLabel('Amount')).toHaveValue(
+    '170',
+  );
+  await expect(page.getByRole('tabpanel').getByLabel('Result')).toHaveValue(
+    '200',
+  );
 });
 
 test('unit selections and category changes recalculate; either field can be cleared', async ({
   page,
 }) => {
   await page.getByRole('tab', { name: 'Units', exact: true }).click();
-  await page.getByLabel('Amount').fill('2');
-  await expect(page.getByLabel('Result')).toHaveValue('200');
+  await page.getByRole('tabpanel').getByLabel('Amount').fill('2');
+  await expect(page.getByRole('tabpanel').getByLabel('Result')).toHaveValue(
+    '200',
+  );
   await page.getByRole('combobox', { name: 'To', exact: true }).click();
   await page.getByRole('option', { name: 'km', exact: true }).click();
-  await expect(page.getByLabel('Result')).toHaveValue('0');
+  await expect(page.getByRole('tabpanel').getByLabel('Result')).toHaveValue(
+    '0',
+  );
   await page.getByRole('combobox', { name: 'Unit Type' }).click();
   await page.getByRole('option', { name: 'Volume' }).click();
-  await expect(page.getByLabel('Result')).toHaveValue('2000');
+  await expect(page.getByRole('tabpanel').getByLabel('Result')).toHaveValue(
+    '2000',
+  );
   await page.getByRole('button', { name: 'Swap units' }).click();
-  await expect(page.getByLabel('Amount')).toHaveValue('2000');
-  await expect(page.getByLabel('Result')).toHaveValue('2');
-  await page.getByLabel('Result').fill('3');
-  await expect(page.getByLabel('Amount')).toHaveValue('3000');
-  await page.getByLabel('Amount').fill('');
-  await expect(page.getByLabel('Result')).toHaveValue('');
+  await expect(page.getByRole('tabpanel').getByLabel('Amount')).toHaveValue(
+    '2000',
+  );
+  await expect(page.getByRole('tabpanel').getByLabel('Result')).toHaveValue(
+    '2',
+  );
+  await page.getByRole('tabpanel').getByLabel('Result').fill('3');
+  await expect(page.getByRole('tabpanel').getByLabel('Amount')).toHaveValue(
+    '3000',
+  );
+  await page.getByRole('tabpanel').getByLabel('Amount').fill('');
+  await expect(page.getByRole('tabpanel').getByLabel('Result')).toHaveValue('');
 });
 
 test('currency failures can be retried and units remain available', async ({
@@ -59,8 +81,10 @@ test('currency failures can be retried and units remain available', async ({
       .filter({ hasText: 'Unable to load exchange rates' }),
   ).toContainText('Unable to load exchange rates');
   await page.getByRole('tab', { name: 'Units', exact: true }).click();
-  await page.getByLabel('Amount').fill('1');
-  await expect(page.getByLabel('Result')).toHaveValue('100');
+  await page.getByRole('tabpanel').getByLabel('Amount').fill('1');
+  await expect(page.getByRole('tabpanel').getByLabel('Result')).toHaveValue(
+    '100',
+  );
   await page.getByRole('tab', { name: 'Currency', exact: true }).click();
   await expect(
     page
@@ -75,8 +99,10 @@ test('currency failures can be retried and units remain available', async ({
   await expect(
     page.getByRole('combobox', { name: 'From', exact: true }),
   ).toBeEnabled();
-  await page.getByLabel('Amount').fill('10');
-  await expect(page.getByLabel('Result')).toHaveValue('11');
+  await page.getByRole('tabpanel').getByLabel('Amount').fill('10');
+  await expect(page.getByRole('tabpanel').getByLabel('Result')).toHaveValue(
+    '11',
+  );
 });
 
 test('theme toggle persists and manifest icons resolve', async ({
@@ -209,8 +235,10 @@ test('currency search and unit selects support keyboard navigation', async ({
   await expect(
     page.getByRole('combobox', { name: 'To', exact: true }),
   ).toHaveText('GBP');
-  await page.getByLabel('Amount').fill('100');
-  await expect(page.getByLabel('Result')).toHaveValue('85');
+  await page.getByRole('tabpanel').getByLabel('Amount').fill('100');
+  await expect(page.getByRole('tabpanel').getByLabel('Result')).toHaveValue(
+    '85',
+  );
 
   const currencyTab = page.getByRole('tab', { name: 'Currency', exact: true });
   await currencyTab.focus();
@@ -229,4 +257,78 @@ test('currency search and unit selects support keyboard navigation', async ({
   ).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(category).toHaveText('Volume');
+});
+
+for (const ratesFail of [false, true]) {
+  test(`tabs keep the same height and position${ratesFail ? ' when rates fail' : ''}`, async ({
+    page,
+  }) => {
+    if (ratesFail) {
+      await page.route('**/api/rates', (route) =>
+        route.fulfill({ status: 502, json: { error: 'Unavailable' } }),
+      );
+      await page.reload();
+      await expect(
+        page
+          .getByRole('alert')
+          .filter({ hasText: 'Unable to load exchange rates' }),
+      ).toBeVisible();
+    }
+    const measure = async () => ({
+      card: await page.locator('[data-slot="card"]').boundingBox(),
+      tabs: await page.getByRole('tablist').boundingBox(),
+      panel: await page.getByRole('tabpanel').boundingBox(),
+    });
+    const initial = await measure();
+    for (const tab of ['Units', 'Currency', 'Units', 'Currency']) {
+      await page.getByRole('tab', { name: tab, exact: true }).click();
+      await expect(page.getByRole('tabpanel')).toHaveCount(1);
+      expect(await measure()).toEqual(initial);
+    }
+  });
+}
+
+test('outgoing controls never show through while tabs switch', async ({
+  page,
+}) => {
+  const samples = await page.evaluate(async () => {
+    const frames: { inactiveControls: number; activeControls: number }[] = [];
+    const isPainted = (element: Element) =>
+      element.checkVisibility({
+        opacityProperty: true,
+        visibilityProperty: true,
+      });
+    // Let the initial form paint before sampling successive switches.
+    await new Promise(requestAnimationFrame);
+    await new Promise(requestAnimationFrame);
+    for (let switchIndex = 0; switchIndex < 6; switchIndex++) {
+      document
+        .querySelector<HTMLButtonElement>(
+          '[role="tab"][data-state="inactive"]',
+        )!
+        .click();
+      for (let frame = 0; frame < 3; frame++) {
+        await new Promise(requestAnimationFrame);
+        const inactive = document.querySelector(
+          '[role="tabpanel"][data-state="inactive"]',
+        )!;
+        const active = document.querySelector(
+          '[role="tabpanel"][data-state="active"]',
+        )!;
+        frames.push({
+          inactiveControls: [
+            ...inactive.querySelectorAll('input, button'),
+          ].filter(isPainted).length,
+          activeControls: [...active.querySelectorAll('input, button')].filter(
+            isPainted,
+          ).length,
+        });
+      }
+    }
+    return frames;
+  });
+  for (const sample of samples) {
+    expect(sample.inactiveControls).toBe(0);
+    expect(sample.activeControls).toBeGreaterThan(0);
+  }
 });

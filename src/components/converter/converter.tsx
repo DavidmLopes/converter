@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Currency from "@/components/converter/currency-converter";
 import DarkModeToggle from "@/components/dark-mode-toggle";
 import {
@@ -15,6 +16,7 @@ import Units from "@/components/converter/unit-converter";
 
 export default function Converter() {
   const currency = useCurrencyRates();
+  const [activeTab, setActiveTab] = useState("currency");
   return (
     <div className="flex min-h-svh items-center justify-center overflow-hidden p-2">
       <Card className="w-full max-w-md">
@@ -27,17 +29,36 @@ export default function Converter() {
           </CardAction>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="currency" className="w-full">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="currency">Currency</TabsTrigger>
               <TabsTrigger value="units">Units</TabsTrigger>
             </TabsList>
-            <TabsContent value="currency" className="grid gap-4 pt-2">
-              <Currency {...currency} />
-            </TabsContent>
-            <TabsContent value="units" className="grid gap-4 pt-2">
-              <Units />
-            </TabsContent>
+            {/* Both panels size the grid; opacity hides the entire inactive layer immediately. */}
+            <div className="grid">
+              <TabsContent
+                value="currency"
+                forceMount
+                inert={activeTab !== "currency"}
+                aria-hidden={activeTab !== "currency"}
+                className="col-start-1 row-start-1 grid content-start gap-4 pt-2 transition-none data-[state=inactive]:invisible data-[state=inactive]:opacity-0"
+              >
+                <Currency {...currency} />
+              </TabsContent>
+              <TabsContent
+                value="units"
+                forceMount
+                inert={activeTab !== "units"}
+                aria-hidden={activeTab !== "units"}
+                className="col-start-1 row-start-1 grid content-start gap-4 pt-2 transition-none data-[state=inactive]:invisible data-[state=inactive]:opacity-0"
+              >
+                <Units />
+              </TabsContent>
+            </div>
           </Tabs>
         </CardContent>
       </Card>
