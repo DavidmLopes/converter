@@ -115,3 +115,72 @@ test('switching tabs keeps the loaded rates without another request', async ({
   ).toBeEnabled();
   expect(requests).toBe(1);
 });
+
+test('theme changes animate in both directions and finish cleanly', async ({
+  page,
+}) => {
+  const toggle = page.getByRole('button', { name: 'Toggle color theme' });
+  for (const theme of ['light', 'dark']) {
+    await toggle.click();
+    await expect(page.locator('html')).toHaveClass(new RegExp(theme));
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          document.getAnimations().some((animation) => {
+            const timing = animation.effect?.getComputedTiming();
+            return (
+              animation instanceof CSSAnimation &&
+              animation.animationName === 'theme-reveal' &&
+              typeof timing?.progress === 'number' &&
+              timing.progress > 0 &&
+              timing.progress < 1
+            );
+          }),
+        ),
+      )
+      .toBe(true);
+    await expect(page.locator('html')).not.toHaveAttribute(
+      'data-theme-transition',
+    );
+  }
+});
+
+test('reduced motion switches themes without a page animation', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.getByRole('button', { name: 'Toggle color theme' }).click();
+  await expect(page.locator('html')).toHaveClass(/light/);
+  await expect(page.locator('html')).not.toHaveAttribute(
+    'data-theme-transition',
+  );
+  expect(await page.evaluate(() => document.getAnimations().length)).toBe(0);
+});
+
+test('browsers without view transitions fade the colors', async ({ page }) => {
+  await page.evaluate(() =>
+    Object.defineProperty(document, 'startViewTransition', {
+      value: undefined,
+      configurable: true,
+    }),
+  );
+  await page.getByRole('button', { name: 'Toggle color theme' }).click();
+  await expect(page.locator('html')).toHaveClass(/light/);
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const channels = getComputedStyle(document.body)
+          .backgroundColor.match(/[\d.]+/g)
+          ?.map(Number);
+        return channels && channels[0] > 10 && channels[0] < 255;
+      }),
+    )
+    .toBe(true);
+  await expect(page.locator('html')).not.toHaveAttribute(
+    'data-theme-transition',
+  );
+  await expect(page.locator('body')).toHaveCSS(
+    'background-color',
+    'rgb(255, 255, 255)',
+  );
+});
